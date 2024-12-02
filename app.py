@@ -3,12 +3,17 @@ import pandas as pd
 
 # Función para procesar el archivo cargado
 def process_file(file, separator):
-    try:
-        # Cargar el archivo con el separador seleccionado
-        df = pd.read_csv(file.name, sep=separator)
-        return f"Archivo cargado con éxito. Aquí tienes las primeras filas:", df.head()
-    except Exception as e:
-        return f"Error al procesar el archivo: {str(e)}", None
+    codificaciones = ['utf-8', 'latin1', 'iso-8859-1']  # Lista de codificaciones comunes
+    for encoding in codificaciones:
+        try:
+            # Intentar leer el archivo con la codificación actual
+            df = pd.read_csv(file.name, sep=separator, encoding=encoding, on_bad_lines='skip')
+            return f"Archivo cargado con éxito usando codificación: {encoding}", df
+        except Exception as e:
+            # Intentar con la siguiente codificación si ocurre un error
+            continue
+    # Si todas las codificaciones fallan
+    return f"No se pudo procesar el archivo con las codificaciones comunes.", None
 
 # Interfaz en Gradio
 with gr.Blocks() as demo:
@@ -40,3 +45,4 @@ with gr.Blocks() as demo:
 
 # Ejecutar la aplicación
 demo.launch()
+
